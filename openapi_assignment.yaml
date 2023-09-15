@@ -1,0 +1,782 @@
+openapi: 3.0.0
+info:
+  title: Backbase account domain Api
+  version: v1
+paths:
+
+# Reterive all multiple accounts associated withprovided customer ID
+  /api/v1/customer/{custID}/accounts:
+    get:
+      tags:
+        - Accounts
+      summary: >-  
+         customer ID get in URI param its numerical value  ranges  min 8 to 15 max digit
+      parameters:
+        - name: custID
+          in: path
+          required: true
+          schema:
+            type: integer
+            maxLength: 15
+            minLength: 8
+            format: int64
+            nullable: false
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetAccountsResponse'
+              examples:
+                accounts Details:
+                  value: |-
+                    [{
+                        "accountNumber": 1023456879,
+                        "accountType": "current",
+                        "availableBalance": 350000.00,
+                        "currentBalance": 45000.00,
+                      },{
+                        "accountNumber": 1023456880,
+                        "accountType": "Saving",
+                        "availableBalance": 28888.00,
+                              "currentBalance": 45000.00,
+                      }]
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              examples:
+                ErrorResponse:
+                  value: |-
+                    {
+                      "title": "Authentication Failed",
+                      "status": "Error ",
+                      "detail": "Either token get expired or invalid. Please try againw it valid token"
+                    }
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              examples:
+                ErrorResponse:
+                  value: |-
+                    {
+                      "title": "No record found",
+                      "status": "Error",
+                      "detail": "May be provider account number not exits or invalid account number "
+                    }
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              examples:
+                ErrorResponse:
+                  value: |-
+                    {
+                      "title": "Internal Issue",
+                      "status": "Technical Errorr",
+                      "detail": "There some technical issue please try after sometime "
+                    }
+
+# Reterive and manage all account with associated particular account number
+  /api/v1/accounts/{accountNumber}:
+    get:
+      tags:
+        - Accounts
+      summary: Get account details for linked account number
+      parameters:
+        - name: accountNumber
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            maxLength: 15
+            minLength: 10
+            nullable: false
+            anyOf:
+              - $ref: '#/components/schemas/CheckingAccountTypeResponse'
+              - $ref: '#/components/schemas/SavingAccountTypeResponse'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountDetailsResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+# create fresh account number based on provided input data
+    post:
+      tags:
+        - Accounts
+      summary: create new account
+      parameters:
+        - name: accountNumber
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            maxLength: 15
+            minLength: 10
+            nullable: false
+      requestBody:
+        description: The request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNewAccountRequest'
+        required: true
+      responses:
+        '201':
+          description: account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblemDetails'
+              examples:
+                ErrorResponse:
+                  value: |-
+                    {
+                      "title": "Invalid  data",
+                      "status": "error",
+                      "detail": "Provided input data not correct"
+                    }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+                
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+# modify existig data by providing account number
+    put:
+      tags:
+        - Accounts
+      summary: update account details for provider or linked account number
+      parameters:
+        - name: accountNumber
+          in: path
+          required: true
+          schema:
+            maxLength: 15
+            minLength: 10
+            type: integer
+            format: int64
+            nullable: false
+      requestBody:
+        description: The request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccountRequest'
+        required: true
+      responses:
+        '204':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+                
+# delete provided account number
+    delete:
+      tags:
+        - Accounts
+      summary: Remove account for provider or linked account number
+      parameters:
+        - name: accountNumber
+          in: path
+          required: true
+          schema:
+            maxLength: 15
+            minLength: 10
+            type: integer
+            format: int64
+            nullable: false
+      responses:
+        '204':
+          description: account deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+                
+# Reterive transaction history based on date range with 10 record per cycle
+  /api/v1/accounts/{accountNumber}/transactions:
+    get:
+      tags:
+        - Transaction History
+      summary: "Gets an array of transactions for a user owned or linked bank account.\r\nThe transaction will be returned over a date range and is server side paginated."
+      parameters:
+        - name: accountNumber
+          in: path
+          description: The account number containing transactions.
+          required: true
+          schema:
+            maxLength: 15
+            minLength: 10
+            type: integer
+            format: int64
+            nullable: false
+        - name: dateFrom
+          in: query
+          description: The start date.
+          schema:
+            type: string
+        - name: dateTo
+          in: query
+          description: The end date.
+          schema:
+            type: string
+        - name: skip
+          in: query
+          description: The records to skip.
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: take
+          in: query
+          description: The number of records per page.
+          schema:
+            type: integer
+            format: int32
+            default: 10
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTransactionsResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+                
+# fund transfer from source account to destination account
+  /api/v1/accounts/{accountNumber}/transfers:
+    post:
+      tags:
+        - Fund Transfer
+      summary: Transfer money between two user owned or linked banks accounts
+      parameters:
+        - name: accountNumber
+          in: path
+          description: The account number to transfer from
+          required: true
+          schema:
+            maxLength: 15
+            minLength: 10
+            type: integer
+            format: int64
+            nullable: false
+      requestBody:
+        description: The request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountTransferRequest'
+        required: true
+      
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FundTransferResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblemDetails'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+components:
+  schemas:
+    CheckingAccountTypeResponse:
+      type: object
+      properties:
+        accountHolderName:
+          type: string
+          description: The name of the account.
+          nullable: false
+        accountNumber:
+          type: integer
+          description: The account number.
+          nullable: false
+        accountType:
+          type: integer
+          description: The account type code.
+          nullable: false
+        availableBalance:
+          type: number
+          description: The available balance of the account.
+          format: double
+        totalBalance:
+          type: number
+          description: The current balance of the account.
+          format: double
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountCardResponse'
+          description: Array of card linked to this account.
+          nullable: true
+    AccountCardResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The id of the card.
+          nullable: true
+        pan:
+          type: string
+          description: The number displayed on the card.
+          nullable: true
+        isActive:
+          type: boolean
+          description: Indicator whether card is active or not.
+          nullable: true
+      additionalProperties: false
+    SavingAccountTypeResponse:
+      type: object
+      properties:
+        accountNumber:
+          type: string
+          description: The account number.
+          nullable: true
+        accountType:
+          type: string
+          description: The  account type code.
+          nullable: true
+        availableBalance:
+          type: number
+          description: The available balance of the account.
+          format: double
+        currentBalance:
+          type: number
+          description: The current balance of the account.
+          format: double
+        accountHolderName:
+          type: string
+          description: The name of the account.
+          nullable: true
+        interest:
+          type: string
+          description: interest paid in percentage
+          nullable: false
+    AccountDetailsResponse:
+      type: object
+      properties:
+        accountNumber:
+          type: string
+          description: The account number.
+          nullable: true
+        accountType:
+          type: string
+          description: The  account type code.
+          nullable: true
+        availableBalance:
+          type: number
+          description: The available balance of the account.
+          format: double
+        currentBalance:
+          type: number
+          description: The current balance of the account.
+          format: double
+        accountHolderName:
+          type: string
+          description: The name of the account.
+          nullable: true
+    AccountTransferRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          description: The amount of money to be transferred.
+          minLength: 1
+          format: double
+        maxTransfer:
+          type: string
+          description: The amount of money to be transferred.
+          minLength: 1
+          nullable: false
+        accountFrom:
+          $ref: '#/components/schemas/AccountTransferAccountRequest'
+        accountTo:
+          $ref: '#/components/schemas/AccountTransferAccountRequest'
+        reference:
+          type: string
+          description: The reference that will appear on both statements.
+          nullable: true
+      additionalProperties: false
+    FundTransferResponse:
+      type: object
+      properties:
+        TransactionID:
+          type: string
+          description: The account number.
+          nullable: true
+        Transactiondate:
+          type: string
+          format: datetime
+          description: fund transfer timestamp
+        availableBalance:
+          type: number
+          description: The available balance of the account.
+          format: double
+        currentBalance:
+          type: number
+          description: The current balance of the account.
+          format: double
+        status:
+          type: string
+          description: The name of the account.
+          nullable: false
+        properties:
+          type: object
+          additionalProperties: {}
+          description: Custom properties returned by the adaptor.
+          nullable: true
+      additionalProperties: false
+    GetTransactionsResponse:
+      type: object
+      properties:
+        pending:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionResponse'
+          description: Array of pending transactions
+          nullable: true
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionResponse'
+          description: Array of transactions
+          nullable: true
+        account:
+          $ref: '#/components/schemas/AccountDetailResponse'
+      additionalProperties: false
+    TransactionResponse:
+      type: object
+      properties:
+        amount:
+          type: string
+          description: The amount for the transaction.
+          nullable: true
+        date:
+          type: string
+          description: The date the transaction occurred.
+          format: date
+          nullable: true
+        description:
+          type: string
+          description: The description of the transactions
+          nullable: true
+        reference:
+          type: string
+          description: The reference of the transaction
+          nullable: true
+      additionalProperties: false
+    AccountTransferAccountRequest:
+      type: object
+      properties:
+        accountNumber:
+          type: integer
+          format: int64
+          maxLength: 20
+          minLength: 10
+          description: The account number
+          nullable: false
+      additionalProperties: false
+    GetAccountsResponse:
+      type: object
+      properties:
+        accountNumber:
+          type: string
+          description: The account number of the affected account.
+          nullable: false
+        accountType:
+          type: string
+          description: The  bank code of the affected account.
+          nullable: false
+        availableBalance:
+          type: number
+          description: The new available balance of the affected account.
+          format: double
+        currentBalance:
+          type: number
+          description: The new current balance of the affected account.
+          format: double
+        accountHolderName:
+          type: string
+          description: The name of the account.
+          nullable: false
+      additionalProperties: false
+    ProblemDetails:
+      type: object
+      properties:
+        title:
+          type: string
+          nullable: false
+        status:
+          type: integer
+          format: int32
+          nullable: false
+        detail:
+          type: string
+          nullable: false
+      additionalProperties: false
+    ValidationProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          nullable: false
+        title:
+          type: string
+          nullable: false
+        status:
+          type: integer
+          format: int32
+          nullable: false
+        detail:
+          type: string
+          nullable: false
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          nullable: false
+          readOnly: true
+      additionalProperties: false
+    AccountDetailResponse:
+      type: object
+      properties:
+        accountNumber:
+          type: string
+          description: The account number of the bank account.
+          nullable: false
+        accountType:
+          type: string
+          description: The  bank account type code.
+          nullable: false
+        availableBalance:
+          type: number
+          description: The available balance of the account.
+          format: double
+        currentBalance:
+          type: number
+          description: The current balance of the account
+          format: double
+        accountName:
+          type: string
+          description: The user defined account name or alias
+          nullable: false
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountCardResponse'
+          description: Array of card linked to this account.
+          nullable: true
+      additionalProperties: false
+    CreateNewAccountRequest:
+      type: object
+      required:
+        - accountNumber
+        - accountType
+        - accountholderFirstName
+        - accountholderLastName
+        - dateOfBirth
+        - phoneNumber
+      properties:
+        accountNumber:
+          type: integer
+          description: The account number of the bank account.
+          nullable: false
+        accountType:
+          type: string
+          description: The  bank account type code.
+          nullable: false
+        accountholderFirstName:
+          type: string
+          description: The available balance of the account.
+          nullable: false
+        accountholderLastName:
+          type: string
+          description: The available balance of the account.
+          nullable: false
+        dateOfBirth:
+          type: string
+          description: account holder date of birth
+          format: date
+          nullable: false
+        emailID:
+          type: string
+          pattern: ^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$
+          description: account holder email id
+          nullable: true
+        phoneNumber:
+          type: integer
+          description: account holder contanct number
+          nullable: false
+      additionalProperties: false
+    UpdateAccountRequest:
+      type: object
+      required:
+        - accountNumber
+        - accountType
+        - accountholderFirstName
+        - accountholderLastName
+        - dateOfBirth
+        - phoneNumber
+      properties:
+        accountNumber:
+          type: integer
+          description: The account number of the bank account.
+          nullable: false
+        accountType:
+          type: string
+          description: The  bank account type code.
+          nullable: false
+        accountholderFirstName:
+          type: string
+          description: The available balance of the account.
+          nullable: true
+        accountholderLastName:
+          type: string
+          description: The available balance of the account.
+          nullable: true
+        dateOfBirth:
+          type: string
+          description: account holder date of birth
+          format: date
+          nullable: false
+        emailID:
+          type: string
+          pattern: ^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$
+          description: account holder email id
+          nullable: true
+        phoneNumber:
+          type: integer
+          description: account holder contanct number
+          nullable: false
+      additionalProperties: false
+  securitySchemes:
+    backBaseApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+security:
+  - backBaseApiKeyAuth: []
