@@ -24,9 +24,12 @@ This project desing OpenAPI sepcification in (OAS 3.0.x) platform. To transforma
 
 ## Structure
 ```
-├── assignmentroot.yaml
+├── openapi.yaml
+│  ├── parameters
+│   │   └── accountNumber.yaml
+│   │   └── customerID.yaml
 │   ├── schemas
-│   │   └── requestsechemas
+│   │   └── request
 │  │   │   └── AccountTransferRequest.yaml     // APIs for Task model
 │  │   │   └── AccountTransferAccountRequest.yaml     // APIs for Task model
 │  │   │   └── SavingAccountTypeResponse.yaml
@@ -35,7 +38,7 @@ This project desing OpenAPI sepcification in (OAS 3.0.x) platform. To transforma
 │  │   │   └── SavingAccountTypeResponse.yaml
 │  │   │   └── SavingAccountTypeResponse.yaml 
 │  │   │   └── SavingAccountTypeResponse.yaml 
-│   │   └── responsechemas
+│   │   └── respons
 │  │   │   └── AccountTypeResponse.yaml     // APIs for Task model
 │  │   │   └── AccountCardResponse.yaml     // APIs for Task model
 │  │   │   └── CreateNewAccountRequest.yaml
@@ -43,9 +46,8 @@ This project desing OpenAPI sepcification in (OAS 3.0.x) platform. To transforma
 │  │   └── commonschemas
 │  │   │   └── ProblemDetails.yaml
 │  │   │   └── ValidationProblemDetails.yaml
-│  │   │   └── ProblemDetails.yaml
 │  │   │   └── SecuritySchemas.yaml
-│  ├── examples
+│  ├── httpcode
 │   │   └── 200.yaml
 │   │   └── 201.yaml
 │   │   └── 204.yaml
@@ -53,8 +55,11 @@ This project desing OpenAPI sepcification in (OAS 3.0.x) platform. To transforma
 │   │   └── 401.yaml
 │   │   └── 402.yaml
 │   │   └── 404.yaml
+│   │   └── 404.yaml
 │   │   └── 500.yaml
-
+│  ├── examples
+│   │   └── getAccountDetailsSuccess.yaml
+│  ├── SecuritySchemas
 
 ## Todo
 
